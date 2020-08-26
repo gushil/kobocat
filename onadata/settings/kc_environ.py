@@ -3,9 +3,9 @@ from datetime import timedelta
 import logging
 import os
 
-from celery.signals import after_setup_logger
 import dj_database_url
-
+from celery.signals import after_setup_logger
+from django.utils.six.moves.urllib.parse import quote_plus
 
 from onadata.settings.common import *
 
@@ -120,10 +120,9 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
 MIDDLEWARE_CLASSES = ('onadata.koboform.redirect_middleware.ConditionalRedirects', ) + MIDDLEWARE_CLASSES
 
-CSRF_COOKIE_DOMAIN = os.environ.get('CSRF_COOKIE_DOMAIN', None)
-
-if CSRF_COOKIE_DOMAIN:
-    SESSION_COOKIE_DOMAIN = CSRF_COOKIE_DOMAIN
+# Domain must not exclude KPI when sharing sessions
+if os.environ.get('SESSION_COOKIE_DOMAIN'):
+    SESSION_COOKIE_DOMAIN = os.environ['SESSION_COOKIE_DOMAIN']
     SESSION_COOKIE_NAME = 'kobonaut'
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
@@ -135,10 +134,16 @@ SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
 
 # MongoDB - moved here from common.py
 if MONGO_DATABASE.get('USER') and MONGO_DATABASE.get('PASSWORD'):
-    MONGO_CONNECTION_URL = (
-        "mongodb://%(USER)s:%(PASSWORD)s@%(HOST)s:%(PORT)s") % MONGO_DATABASE
+    MONGO_CONNECTION_URL = "mongodb://{user}:{password}@{host}:{port}/{db_name}".\
+        format(
+            user=MONGO_DATABASE['USER'],
+            password=quote_plus(MONGO_DATABASE['PASSWORD']),
+            host=MONGO_DATABASE['HOST'],
+            port=MONGO_DATABASE['PORT'],
+            db_name=MONGO_DATABASE['NAME']
+        )
 else:
-    MONGO_CONNECTION_URL = "mongodb://%(HOST)s:%(PORT)s" % MONGO_DATABASE
+    MONGO_CONNECTION_URL = "mongodb://%(HOST)s:%(PORT)s/%(NAME)s" % MONGO_DATABASE
 
 # PyMongo 3 does acknowledged writes by default
 # https://emptysqua.re/blog/pymongos-new-default-safe-writes/
@@ -292,6 +297,5 @@ if ISSUE_242_MINIMUM_INSTANCE_ID is not None:
         },
         'options': {'queue': 'kobocat_queue'}
     }
-# #### END ISSUE 242 FIX ######
 
-
+###### END ISSUE 242 FIX ######
