@@ -11,6 +11,7 @@ from onadata.apps.api.urls import XFormListApi
 from onadata.apps.api.urls import XFormSubmissionApi
 from onadata.apps.api.urls import router, router_with_patch_list
 from onadata.apps.main.service_health import service_health
+from onadata.apps.main.app_info import app_info
 from onadata.apps.main.views import (
     # main website views
     home,
@@ -66,6 +67,7 @@ urlpatterns = [
     re_path('^api/v1/', include(router.urls)),
     re_path('^api/v1/', include(router_with_patch_list.urls)),
     re_path(r'^service_health/$', service_health),
+    re_path(r'^app_info/$', app_info),
     re_path(r'^api-docs/', RedirectView.as_view(url='/api/v1/')),
     re_path(r'^api/', RedirectView.as_view(url='/api/v1/')),
     re_path(r'^api/v1', RedirectView.as_view(url='/api/v1/')),

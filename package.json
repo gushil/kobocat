@@ -1,6 +1,7 @@
 {
-  "name": "formhub-js",
-  "version": "0.0.1",
+  "name": "kobocat",
+  "version": "oc-1.0.0",
+  "description": "form designer service",
   "dependencies": {},
   "devDependencies": {
     "tmp": "0.0.23",
