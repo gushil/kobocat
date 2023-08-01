@@ -120,7 +120,7 @@ STATICFILES_FINDERS = [
 
 MIDDLEWARE = [
     'onadata.koboform.redirect_middleware.ConditionalRedirects',
-    'reversion.middleware.RevisionMiddleware',
+    'onadata.apps.main.middleware.RevisionMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
@@ -321,7 +321,7 @@ SECURE_HSTS_PRELOAD = env.bool('SECURE_HSTS_PRELOAD', False)
 SECURE_HSTS_SECONDS = env.int('SECURE_HSTS_SECONDS', 0)
 
 # Limit sessions to 1 week (the default is 2 weeks)
-SESSION_COOKIE_AGE = 604800
+SESSION_COOKIE_AGE = env.int('DJANGO_SESSION_COOKIE_AGE', 604800)
 
 # The maximum size in bytes that a request body may be before a SuspiciousOperation (RequestDataTooBig) is raised  # noqa
 # This variable is available only in Django 1.10+. Only there for next upgrade
@@ -490,7 +490,7 @@ OAUTH2_PROVIDER = {
         'write': 'Write scope',
         'groups': 'Access to your groups'
     },
-    'PKCE_REQUIRED' : False,
+    'PKCE_REQUIRED': False,
 }
 
 # All registration should be done through KPI, so Django Registration should
@@ -517,11 +517,6 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_WHITELIST = (
     'http://kc.kobo.local',
 )
-
-# ToDo Remove when `kobokitten-remove-ui-CUD-actions-unicode` is merged
-GOOGLE_STEP2_URI = 'http://ona.io/gwelcome'
-GOOGLE_CLIENT_ID = '617113120802.onadata.apps.googleusercontent.com'
-GOOGLE_CLIENT_SECRET = '9reM29qpGFPyI8TBuB54Z4fk'
 
 THUMB_CONF = {
     'large': {'size': 1280, 'suffix': '-large'},
@@ -677,6 +672,13 @@ SERVICE_ACCOUNT = {
     'WHITELISTED_HOSTS': env.list('SERVICE_ACCOUNT_WHITELISTED_HOSTS', default=[]),
 }
 
+REVERSION_MIDDLEWARE_SKIPPED_URL_PATTERNS = {
+    r'/api/v1/users/(.*)': ['DELETE']
+}
+
+# run heavy migration scripts by default
+# NOTE: this should be set to False for major deployments. This can take a long time
+SKIP_HEAVY_MIGRATIONS = env.bool('SKIP_HEAVY_MIGRATIONS', False)
 
 ################################
 # Celery settings              #
