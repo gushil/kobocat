@@ -1,4 +1,4 @@
-FROM python:3.10-bullseye as build-python
+FROM --platform=$BUILDPLATFORM python:3.10-bullseye as build-python
 
 ENV VIRTUAL_ENV=/opt/venv \
     KOBOCAT_SRC_DIR=/srv/src/kobocat \
@@ -10,7 +10,7 @@ RUN pip install --quiet pip-tools==6.\*
 COPY ./dependencies/pip/requirements.txt "${TMP_DIR}/pip_dependencies.txt"
 RUN pip-sync "${TMP_DIR}/pip_dependencies.txt" 1>/dev/null
 
-FROM python:3.10-slim-bullseye
+FROM --platform=$TARGETPLATFORM python:3.10-slim-bullseye
 
 # Declare environment variables
 ENV DEBIAN_FRONTEND=noninteractive
