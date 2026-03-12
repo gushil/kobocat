@@ -15,11 +15,11 @@ def service_health(request):
     any_failure = False
 
     t0 = time.time()
+    mongo_message = None
     try:
-        settings.MONGO_DB.instances.find_one()
-    except Exception as e:
-        mongo_message = repr(e)
-        any_failure = True
+        settings.MONGO_DB.instances.find_one(max_time_ms=settings.MONGO_TIMEOUT_MS)
+    except Exception:
+        pass
     else:
         mongo_message = 'OK'
     mongo_time = time.time() - t0
@@ -36,13 +36,14 @@ def service_health(request):
 
     output = (
         '{}\r\n\r\n'
-        'Mongo: {} in {:.3} seconds\r\n'
         'Postgres: {} in {:.3} seconds\r\n'
     ).format(
         'FAIL' if any_failure else 'OK',
-        mongo_message, mongo_time,
         postgres_message, postgres_time,
     )
+
+    if mongo_message is not None:
+        output += 'Mongo: {} in {:.3} seconds\r\n'.format(mongo_message, mongo_time)
 
     return HttpResponse(
         output, status=(500 if any_failure else 200), content_type='text/plain'

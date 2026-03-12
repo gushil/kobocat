@@ -807,8 +807,11 @@ else:
     except ValueError:  # db_url is unable to parse replica set strings
         mongo_db_name = env.str('MONGO_DB_NAME', 'formhub')
 
+MONGO_TIMEOUT_MS = 2000
+
 mongo_client = MongoClient(
-    MONGO_DB_URL, connect=False, journal=True, tz_aware=True
+    MONGO_DB_URL, connect=False, journal=True, tz_aware=True,
+    serverSelectionTimeoutMS=MONGO_TIMEOUT_MS
 )
 MONGO_DB = mongo_client[mongo_db_name]
 
