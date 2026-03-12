@@ -17,7 +17,7 @@ def service_health(request):
     t0 = time.time()
     mongo_message = None
     try:
-        settings.MONGO_DB.instances.find_one(max_time_ms=settings.MONGO_TIMEOUT_MS)
+        settings.MONGO_DB.instances.find_one(max_time_ms=settings.MONGO_HEALTH_CHECK_TIMEOUT_MS)
     except Exception:
         pass
     else:
