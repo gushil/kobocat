@@ -15,21 +15,33 @@ check_table() {
             ;;
     esac
     result=$(gosu "${UWSGI_USER}" python manage.py dbshell 2>/dev/null <<EOF
-SELECT COUNT(*) FROM information_schema.tables WHERE table_name='${table}';
+SELECT COUNT(*) FROM information_schema.tables WHERE table_name='${table}' AND table_schema IN (SELECT unnest(string_to_array(current_setting('search_path'), ', ')));
 EOF
 )
-    printf '%s\n' "${result}" | grep -q '^[[:space:]]*1[[:space:]]*$'
+    printf '%s\n' "${result}" | grep -qE '^[[:space:]]*[1-9][0-9]*[[:space:]]*$'
 }
 
 check_column() {
     local table="$1"
     local column="$2"
     local result
+    case "${table}" in
+        ''|*[!a-zA-Z0-9_]*)
+            echo "check_column: invalid table name '${table}'" >&2
+            return 1
+            ;;
+    esac
+    case "${column}" in
+        ''|*[!a-zA-Z0-9_]*)
+            echo "check_column: invalid column name '${column}'" >&2
+            return 1
+            ;;
+    esac
     result=$(gosu "${UWSGI_USER}" python manage.py dbshell 2>/dev/null <<EOF
-SELECT COUNT(*) FROM information_schema.columns WHERE table_name='${table}' AND column_name='${column}';
+SELECT COUNT(*) FROM information_schema.columns WHERE table_name='${table}' AND column_name='${column}' AND table_schema IN (SELECT unnest(string_to_array(current_setting('search_path'), ', ')));
 EOF
 )
-    printf '%s\n' "${result}" | grep -q '^[[:space:]]*1[[:space:]]*$'
+    printf '%s\n' "${result}" | grep -qE '^[[:space:]]*[1-9][0-9]*[[:space:]]*$'
 }
 
 echo 'KoBoCAT initializing...'
